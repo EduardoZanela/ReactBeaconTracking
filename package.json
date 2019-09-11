@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.26",
     "pubsub-js": "^1.7.0",
     "react": "16.8.6",
     "react-native": "0.60.5",
