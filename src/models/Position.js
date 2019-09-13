@@ -1,6 +1,6 @@
 import Utils from './../utils/Utils';
 import moment from 'moment';
-import timezone from 'moment-timezone'
+import timezone from 'moment-timezone';
 
 export default class Position {
 
@@ -8,7 +8,8 @@ export default class Position {
         this.id = Utils.guid();
         this.lat = '';
         this.lng = '';
-        this.distances = moment(new Date()).tz("America/Sao_Paulo").toDate();
+        this.distances = distances;
+        this.createdDate = moment(new Date()).tz("America/Sao_Paulo").toDate();
     }
 
     static schema = {

@@ -9,13 +9,15 @@ import {
   FlatList,
   DeviceEventEmitter
 } from 'react-native';
-import PubSub from 'pubsub-js'
-import BackgroundFetch from "react-native-background-fetch";
+import PubSub from 'pubsub-js';
+import SyncAdapter from 'react-native-sync-adapter';
 
 import BeaconListner from './src/services/BeaconListner'
 import BeaconService from './src/services/BeaconService';
 
 const beaconService = new BeaconService();
+const syncInterval = 60; // 1 minute
+const syncFlexTime = 15; // 15 seconds
 
 export default class App extends Component {
 
@@ -39,6 +41,10 @@ export default class App extends Component {
     PubSub.subscribe('NEW_BEACONS_ADD', (msg, data) => {
       console.log('on listner subscribe');
       this.state.positions = data;
+    });
+    SyncAdapter.init({
+      syncInterval,
+      syncFlexTime,
     });
   }
 
