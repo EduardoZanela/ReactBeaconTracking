@@ -37,12 +37,13 @@ export default class App extends Component {
     // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
     beaconService.findBeaconsByTime(5);
     PubSub.subscribe('NEW_BEACONS_ADD', (msg, data) => {
-      console.log('on listner subscribe');
+      console.log('APP.componentDidMount - on listner subscribe');
       this.state.positions = data;
     });
   }
 
   render() {
+    console.log('APP.render - state positions ' + this.state.positions);
     return (
       <View style={styles.container}>
         <FlatList

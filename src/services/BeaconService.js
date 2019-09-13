@@ -18,7 +18,6 @@ export default class BeaconService{
   async saveData(data){
     // CREATE ARRAY OF DISTANCES
     var distances = [];
-
     // CREATE BEACONS ARRAY
     data.beacons.forEach((beacon) => {
       if(beacon.uuid){
@@ -36,8 +35,8 @@ export default class BeaconService{
 
     // CALL FUNCTION TO UPDATE STATE AND SHOW LAST POSITIONS
     this.findBeaconsByTime(5);
-    let all = repository.objects('Position');
-    console.log('from repo: ' + all.length);
+    //let all = repository.objects('Position');
+    //console.log('BeaconService.saveData - objects from repo: ' + all.length);
   }
 
   /**
@@ -45,15 +44,10 @@ export default class BeaconService{
    * @param {number} time Tempo em minutos para busca dos ultimos registros 
    */
   async findBeaconsByTime(time){
-    console.log('enter update beacons');
+    console.log('BeaconService.findBeaconsByTime - enter update beacons');
 
-    let dt = new Date();
-    dt.setMinutes( dt.getMinutes() - time);
-    let dtFilter = moment(dt).tz("America/Sao_Paulo").toDate();
-    console.log('date to filter ' + dtFilter + ' ' + typeof(dtFilter));
-
-    let positions = repository.objects('Position').filtered('createdDate > $0', dtFilter);
-    console.log('positions db ' + JSON.stringify(positions));
+    let positions = repository.objects('Position').sorted('createdDate', true).slice(0,number);
+    console.log('BeaconService.findBeaconsByTime - objects filtered from repo ' + positions.length);
     // publish a topic asynchronously
     PubSub.publish('NEW_BEACONS_ADD', positions);
   }

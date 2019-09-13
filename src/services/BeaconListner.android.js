@@ -21,8 +21,7 @@ export default class BeaconListner {
     // LISTNER TO RECEIVE DATA FROM BEACONS SCAN
     DeviceEventEmitter.addListener('beaconsDidRange',
       (data) => {
-        console.log(new Date() + ' beaconsDidRange data: ', data);
-
+        console.log('BeaconListner.startRangingBeacons - ' + new Date() + ' beaconsDidRange data returned ', data);
         // CALL ASYNC FUNCTION SAVEDATA TO SAVE BEACONS TO REALM
         beaconService.saveData(data);
       }

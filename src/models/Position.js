@@ -8,7 +8,8 @@ export default class Position {
         this.id = Utils.guid();
         this.lat = '';
         this.lng = '';
-        this.distances = moment(new Date()).tz("America/Sao_Paulo").toDate();
+        this.distances = distances;
+        this.createdDate =  moment(new Date()).tz("America/Sao_Paulo").toDate();
     }
 
     static schema = {
