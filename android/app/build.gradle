@@ -188,6 +188,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sync-adapter')
     implementation project(':react-native-background-fetch')
     implementation project(':realm')
     implementation fileTree(dir: "libs", include: ["*.jar"])

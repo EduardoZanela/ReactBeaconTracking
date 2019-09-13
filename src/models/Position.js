@@ -1,6 +1,6 @@
 import Utils from './../utils/Utils';
 import moment from 'moment';
-import timezone from 'moment-timezone'
+import timezone from 'moment-timezone';
 
 export default class Position {
 
