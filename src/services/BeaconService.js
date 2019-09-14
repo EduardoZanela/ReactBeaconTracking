@@ -5,6 +5,7 @@ import Realm from 'realm';
 
 import Position from './../models/Position';
 import Distance from './../models/Distance';
+import Resources from './../constants/Constants';
 
 const repository = new Realm({
     schema: [Position.schema, Distance.schema]
@@ -34,7 +35,7 @@ export default class BeaconService{
     });
 
     // CALL FUNCTION TO UPDATE STATE AND SHOW LAST POSITIONS
-    this.findBeaconsByTime(5);
+    this.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
     //let all = repository.objects('Position');
     //console.log('BeaconService.saveData - objects from repo: ' + all.length);
   }
@@ -43,7 +44,7 @@ export default class BeaconService{
    * Function async to update state with last positions
    * @param {number} time Tempo em minutos para busca dos ultimos registros 
    */
-  async findBeaconsByTime(time){
+  async findBeaconsByTime(number){
     console.log('BeaconService.findBeaconsByTime - enter update beacons');
 
     let positions = repository.objects('Position').sorted('createdDate', true).slice(0,number);

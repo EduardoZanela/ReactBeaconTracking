@@ -14,10 +14,11 @@ import SyncAdapter from 'react-native-sync-adapter';
 
 import BeaconListner from './src/services/BeaconListner'
 import BeaconService from './src/services/BeaconService';
+import Resources from './src/constants/Constants';
 
 const beaconService = new BeaconService();
-const syncInterval = 60; // 1 minute
-const syncFlexTime = 15; // 15 seconds
+const syncInterval = Resources.SYNC_INTERVAL_IN_SECONDS;
+const syncFlexTime = Resources.SYNC_FLEX_TIME;
 
 export default class App extends Component {
 
@@ -26,26 +27,23 @@ export default class App extends Component {
     this.state = {
       positions: []
     };
-    // DELETE ALL POSITIONS
-    //let allPositions = repository.objects('Position');
-    //if(allPositions >= 1){
-      //repository.delete(allPositions);
-    //}
-  }
-
-  componentDidMount(){
-    BeaconListner.startRangingBeacons();
-
-    // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
-    beaconService.findBeaconsByTime(5);
-    PubSub.subscribe('NEW_BEACONS_ADD', (msg, data) => {
-      console.log('APP.componentDidMount - on listner subscribe');
-      this.state.positions = data;
-    });
     SyncAdapter.init({
       syncInterval,
       syncFlexTime,
     });
+
+    BeaconListner.startRangingBeacons();
+
+    // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
+    beaconService.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
+
+    PubSub.subscribe('NEW_BEACONS_ADD', (msg, data) => {
+      console.log('APP.constructor - on listner subscribe + ' + data);
+      this.setState({
+        positions: data
+      });
+    });
+    console.warn("were");
   }
 
   render() {

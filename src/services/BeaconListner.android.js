@@ -1,10 +1,9 @@
 import {DeviceEventEmitter, NativeModules} from 'react-native';
 import BeaconService from './BeaconService';
+import Resources from './../constants/Constants';
 
 const beaconManager = NativeModules.BeaconModule;
 const beaconService = new BeaconService();
-
-const ONE_MINUTE = 60000;
 
 export default class BeaconListner {
     /**
@@ -15,8 +14,8 @@ export default class BeaconListner {
     beaconManager.startRanging(() => console.log('connected'), () => console.log('rejected'));
     
     // SET TIME BETWEEN SCANS
-    //BeaconManager.setForegroundBetweenScanPeriod(ONE_MINUTE);
-    //BeaconManager.setBackgroundBetweenScanPeriod(ONE_MINUTE*5);
+    beaconManager.setForegroundBetweenScanPeriod(Resources.ONE_MINUTE_IN_MILLI_SECONDS*3);
+    beaconManager.setBackgroundBetweenScanPeriod(Resources.ONE_MINUTE_IN_MILLI_SECONDS*5);
 
     // LISTNER TO RECEIVE DATA FROM BEACONS SCAN
     DeviceEventEmitter.addListener('beaconsDidRange',

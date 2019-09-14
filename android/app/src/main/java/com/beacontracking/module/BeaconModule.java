@@ -176,24 +176,27 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     }
 
     @ReactMethod
-    public void setBackgroundScanPeriod(int period) {
+    public void setBackgroundScanPeriod(int period) throws RemoteException {
         mBeaconManager.setBackgroundScanPeriod((long) period);
+        mBeaconManager.updateScanPeriods();
     }
 
     @ReactMethod
-    public void setBackgroundBetweenScanPeriod(int period) {
+    public void setBackgroundBetweenScanPeriod(int period) throws RemoteException {
         mBeaconManager.setBackgroundBetweenScanPeriod((long) period);
+        mBeaconManager.updateScanPeriods();
     }
 
     @ReactMethod
-    public void setForegroundScanPeriod(int period) {
+    public void setForegroundScanPeriod(int period) throws RemoteException {
         mBeaconManager.setForegroundScanPeriod((long) period);
+        mBeaconManager.updateScanPeriods();
     }
 
     @ReactMethod
-    public void setForegroundBetweenScanPeriod(int period) {
+    public void setForegroundBetweenScanPeriod(int period) throws RemoteException {
         mBeaconManager.setForegroundBetweenScanPeriod((long) period);
+        mBeaconManager.updateScanPeriods();
         Log.d(LOG_TAG, "Time received: " + period + " Time seted " + mBeaconManager.getForegroundBetweenScanPeriod());
-
     }
 }
