@@ -7,7 +7,7 @@ import {
   Text,
   StatusBar,
   FlatList,
-  DeviceEventEmitter
+  PermissionsAndroid
 } from 'react-native';
 import PubSub from 'pubsub-js';
 import SyncAdapter from 'react-native-sync-adapter';
@@ -43,7 +43,30 @@ export default class App extends Component {
         positions: data
       });
     });
-    console.warn("were");
+  }
+  componentDidUpdate(){
+    this.requestCameraPermission();
+  }
+
+  async requestCameraPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: 'Permissão de localização',
+          message: 'O aplicativo necessita utilizar sua localização',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'Permitir',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('App.requestCameraPermission - You can use the location');
+      } else {
+        console.log('App.requestCameraPermission - Location permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
   }
 
   render() {

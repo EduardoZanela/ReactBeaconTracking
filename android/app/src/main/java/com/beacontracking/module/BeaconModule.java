@@ -3,10 +3,14 @@ package com.beacontracking.module;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.beacontracking.BeaconDTO;
 import com.beacontracking.constants.Event;
+import com.beacontracking.service.LocationService;
+import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -27,6 +31,7 @@ import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.powersave.BackgroundPowerSaver;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.annotation.Nonnull;
@@ -97,6 +102,8 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
         Log.d(LOG_TAG, " Time setled " + mBeaconManager.getForegroundBetweenScanPeriod());
+        ArrayList<BeaconDTO> beaconsDto = new ArrayList<>();
+
         for (Beacon beacon: beacons) {
             // if is a eddystone protocol
             if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
@@ -108,9 +115,22 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
                 Log.d(LOG_TAG, "I see a beacon transmitting namespace id: " + namespaceId +
                         " and instance id: " + instanceId +
                         " approximately " + beacon.getDistance() + " meters away.");
-                sendEvent(mReactContext, Event.EVENT_BEACONS_DID_RANGE, createRangingResponse(beacons, region));
+            }
+            if(beacon.getIdentifiers().size() > 2){
+                beaconsDto.add(new BeaconDTO(beacon.getId2().toInt(), beacon.getId3().toInt(), beacon.getId1().toString(), beacon.getRssi(), beacon.getDistance()));
+            } else {
+                beaconsDto.add(new BeaconDTO(beacon.getId1().toString(), beacon.getId2().toString(), beacon.getRssi(), beacon.getDistance()));
             }
         }
+        Intent service = new Intent(getApplicationContext(), LocationService.class);
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("data", beaconsDto);
+
+        service.putExtra("extra", bundle);
+
+        getApplicationContext().startService(service);
+        HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
     }
 
     @Override
@@ -132,33 +152,6 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
         if (reactContext.hasActiveCatalystInstance()) {
             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
         }
-    }
-
-    private WritableMap createRangingResponse(Collection<Beacon> beacons, Region region) {
-
-        WritableMap map = new WritableNativeMap();
-        map.putString("region", region.getUniqueId());
-
-        WritableArray a = new WritableNativeArray();
-
-        for (Beacon beacon : beacons) {
-            WritableMap b = new WritableNativeMap();
-
-            if (beacon.getIdentifiers().size() > 2) {
-                b.putInt("major", beacon.getId2().toInt());
-                b.putInt("minor", beacon.getId3().toInt());
-                b.putString("uuid", beacon.getId1().toString());
-            } else{
-                b.putString("namespaceId", beacon.getId1().toString());
-                b.putString("instanceId", beacon.getId2().toString());
-            }
-            b.putInt("rssi", beacon.getRssi());
-            b.putDouble("distance", beacon.getDistance());
-            a.pushMap(b);
-        }
-
-        map.putArray("beacons", a);
-        return map;
     }
 
     @ReactMethod

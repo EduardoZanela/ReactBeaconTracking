@@ -2,6 +2,7 @@ import moment from 'moment';
 import timezone from 'moment-timezone'
 import PubSub from 'pubsub-js'
 import Realm from 'realm';
+import {AppState} from 'react-native';
 
 import Position from './../models/Position';
 import Distance from './../models/Distance';
@@ -12,7 +13,20 @@ const repository = new Realm({
 });
 
 export default class BeaconService{
-    /**
+  
+  constructor(){
+    this.state = {
+      appState: AppState.currentState
+    }
+    AppState.addEventListener('change', this._handleAppStateChange);
+  }
+  _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      console.log('App has come to the foreground!')
+    }
+    this.state.appState = nextAppState;
+  }
+  /**
    * Async function to save scanned beacons to realm database
    * @param {Object} data Beacons returned by native module 
    */
@@ -33,11 +47,11 @@ export default class BeaconService{
     repository.write(() => {
       repository.create('Position', position);
     });
-
-    // CALL FUNCTION TO UPDATE STATE AND SHOW LAST POSITIONS
-    this.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
-    //let all = repository.objects('Position');
-    //console.log('BeaconService.saveData - objects from repo: ' + all.length);
+    
+    if(this.state.appState.match(/active/)){
+      // CALL FUNCTION TO UPDATE STATE AND SHOW LAST POSITIONS
+      this.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
+    }
   }
 
   /**
