@@ -32,6 +32,7 @@ export default class App extends Component {
       syncFlexTime,
     });
 
+    this.requestCameraPermission();
     BeaconListner.startRangingBeacons();
 
     // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
@@ -43,9 +44,6 @@ export default class App extends Component {
         positions: data
       });
     });
-  }
-  componentDidUpdate(){
-    this.requestCameraPermission();
   }
 
   async requestCameraPermission() {
@@ -59,11 +57,6 @@ export default class App extends Component {
           buttonPositive: 'Permitir',
         },
       );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('App.requestCameraPermission - You can use the location');
-      } else {
-        console.log('App.requestCameraPermission - Location permission denied');
-      }
     } catch (err) {
       console.warn(err);
     }
