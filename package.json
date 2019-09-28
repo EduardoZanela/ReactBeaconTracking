@@ -15,8 +15,10 @@
     "react": "16.8.6",
     "react-native": "0.60.5",
     "react-native-background-fetch": "^2.7.0",
+    "react-native-keyboard-aware-scroll-view": "^0.9.1",
     "react-native-sync-adapter": "2.0.0",
-    "realm": "^2.29.2"
+    "realm": "^2.29.2",
+    "tcomb-form-native": "^0.6.20"
   },
   "devDependencies": {
     "@babel/core": "^7.6.0",
