@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const URL = 'http://playground.interscity.org';
+const URL = 'http://192.168.0.152:8000';
 
 export default class InterSCity {
     

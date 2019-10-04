@@ -20,7 +20,7 @@ export default class Position {
             lat: 'string',
             lng: 'string',
             createdDate: 'date',
-            distances: {type: 'list', objectType: 'Distance'}
+            distances: 'Distance[]'
         }
     };
 

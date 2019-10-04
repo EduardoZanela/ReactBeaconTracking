@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
-  ScrollView,
+  NativeModules,
   View,
   Text,
   StatusBar,
@@ -16,6 +15,7 @@ import BeaconListner from './src/services/BeaconListner'
 import BeaconService from './src/services/BeaconService';
 import Resources from './src/constants/Constants';
 
+const beaconManager = NativeModules.BeaconModule;
 const beaconService = new BeaconService();
 const syncInterval = Resources.SYNC_INTERVAL_IN_SECONDS;
 const syncFlexTime = Resources.SYNC_FLEX_TIME;
@@ -31,9 +31,9 @@ export default class App extends Component {
       syncInterval,
       syncFlexTime,
     });
-
     this.requestCameraPermission();
-    BeaconListner.startRangingBeacons();
+    beaconManager.startRanging(() => console.log('connected'), () => console.log('rejected'));
+    beaconManager.setForegroundBetweenScanPeriod(Resources.ONE_MINUTE_IN_MILLI_SECONDS*2);
 
     // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
     beaconService.findBeaconsByTime(Resources.BEACONS_TO_SHOW);

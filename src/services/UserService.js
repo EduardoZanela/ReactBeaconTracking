@@ -16,12 +16,15 @@ export default class UserService{
             'capabilities': [
                 'location_monitoring'
             ],
-            'status': 'active'
+            'status': 'active',
+            "lat": 0,
+            "lon": 0
         }
     }
     api.createResource(resource)
         .then(response => {
-            let userEntity = new User(user, response.uuid);
+            console.log(JSON.stringify(response));
+            let userEntity = new User(user, response.data.data.uuid);
             Realm.open({
                 path: 'anotherRealm.realm',
                 schema: [User.schema]
@@ -32,7 +35,7 @@ export default class UserService{
             });
         })
         .catch(error => {
-            console.log('UserService.saveUser - Not possible to save user, try again');
+            console.log('UserService.saveUser - Not possible to save user, try again' + JSON.stringify(error.response));
         });
   }
 }

@@ -10,23 +10,32 @@ const api = new InterSCity();
 
 const syncApi = async () => {
   console.log('Scheduler.syncApi - enter method');
-  let positions = repository.objects('Position');
-  var data = {
-    'location_monitoring': []
+  let positions = Array.from(repository.objects('Position').slice(0,10));
+  var request = { 
+    'data': {
+      'location_monitoring': []
+    }
   }
   positions.forEach(position => {
-    data.location_monitoring.push({
-      'position': position,
+    let insert = {
+      'position': {
+        'id': position.id,
+        'lat': position.lat,
+        'lng': position.lng,
+        'createdDate': position.createdDate,
+        'distances': Array.from(position.distances)
+      },
       'timestamp': position.createdDate
-    });
+    };
+    request.data.location_monitoring.push(insert);
   });
-  api.createData('70c45ba8-811f-470f-a362-e6caa345dce4', data).then(() => {
+  api.createData('d2f1afff-2f61-4aae-9d9a-290adad2ac8a', request).then(response => {
     if(positions >= 1){
       repository.delete(positions);
     }
     console.log('Scheduler.syncApi - data sent');
   }).catch(error => {
-    console.warn('Scheduler.syncApi - error to contact api ' + error);
+    console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
   });
 };
 
