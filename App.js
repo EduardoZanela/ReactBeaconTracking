@@ -6,7 +6,8 @@ import {
   Text,
   StatusBar,
   FlatList,
-  PermissionsAndroid
+  PermissionsAndroid,
+  AppRegistry
 } from 'react-native';
 import PubSub from 'pubsub-js';
 import SyncAdapter from 'react-native-sync-adapter';
@@ -14,6 +15,11 @@ import SyncAdapter from 'react-native-sync-adapter';
 import BeaconListner from './src/services/BeaconListner'
 import BeaconService from './src/services/BeaconService';
 import Resources from './src/constants/Constants';
+import syncApi from './src/headlesstask/SyncronizeApi';
+import saveData from './src/headlesstask/SaveBeaconData';
+
+AppRegistry.registerHeadlessTask('TASK_SYNC_ADAPTER', () => syncApi);
+AppRegistry.registerHeadlessTask('SAVE_LOCATION', () => saveData);
 
 const beaconManager = NativeModules.BeaconModule;
 const beaconService = new BeaconService();

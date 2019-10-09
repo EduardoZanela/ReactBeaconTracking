@@ -1,4 +1,4 @@
-import Realm from 'realm';
+import RealmRepository from './../models/RealmRepository';
 import InterSCity from './../api/InterSCityApi';
 
 import User from './../models/User';
@@ -25,10 +25,7 @@ export default class UserService{
         .then(response => {
             console.log(JSON.stringify(response));
             let userEntity = new User(user, response.data.data.uuid);
-            Realm.open({
-                path: 'anotherRealm.realm',
-                schema: [User.schema]
-            }).then(repository => {
+            RealmRepository.dbOperation((repository) => {
                 repository.write(() => {
                     repository.create('User', userEntity);
                 });

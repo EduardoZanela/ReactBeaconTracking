@@ -1,16 +1,9 @@
 import InterSCity from './../api/InterSCityApi';
-import Position from './../models/Position';
-import Distance from './../models/Distance'
-import Realm from 'realm';
+import RealmRepository from './../models/RealmRepository';
 
-const repository = new Realm({
-  schema: [Position.schema, Distance.schema]
-});
 const api = new InterSCity();
 
-const syncApi = async () => {
-  console.log('Scheduler.syncApi - enter method');
-  let positions = Array.from(repository.objects('Position').slice(0,10));
+const createRequest = (positions) => {
   var request = { 
     'data': {
       'location_monitoring': []
@@ -29,14 +22,30 @@ const syncApi = async () => {
     };
     request.data.location_monitoring.push(insert);
   });
-  api.createData('d2f1afff-2f61-4aae-9d9a-290adad2ac8a', request).then(response => {
-    if(positions >= 1){
-      repository.delete(positions);
+  return request;
+};
+
+const syncApi = async () => {
+  console.log('Scheduler.syncApi - enter method');
+
+  RealmRepository.dbOperation((repository) => {
+    let positions = Array.from(repository.objects('Position').slice(0,10));
+    if(positions.length > 0){
+      var request = createRequest(positions);
+      // Send to api
+      // 'd2f1afff-2f61-4aae-9d9a-290adad2ac8a'
+      let uuid = repository.objects('User')[0].uuid;
+      api.createData(uuid, request).then(response => {
+        if(positions >= 1){
+          repository.delete(positions);
+        }
+        console.log('Scheduler.syncApi - data sent');
+      }).catch(error => {
+        console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
+      });
     }
-    console.log('Scheduler.syncApi - data sent');
-  }).catch(error => {
-    console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
   });
+
 };
 
 export default syncApi;

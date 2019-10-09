@@ -1,16 +1,13 @@
 import moment from 'moment';
 import timezone from 'moment-timezone'
 import PubSub from 'pubsub-js'
-import Realm from 'realm';
+import RealmRepository from './../models/RealmRepository';
 import {AppState} from 'react-native';
 
 import Position from './../models/Position';
 import Distance from './../models/Distance';
 import Resources from './../constants/Constants';
 
-const repository = new Realm({
-    schema: [Position.schema, Distance.schema]
-});
 
 export default class BeaconService{
   
@@ -44,8 +41,10 @@ export default class BeaconService{
 
     // SAVE POSITION WITH DISTANCES
     let position = new Position(distances);
-    repository.write(() => {
-      repository.create('Position', position);
+    RealmRepository.dbOperation((repository) => {
+      repository.write(() => {
+        repository.create('Position', position);
+      });
     });
     
     if(this.state.appState.match(/active/)){
@@ -61,9 +60,11 @@ export default class BeaconService{
   async findBeaconsByTime(number){
     console.log('BeaconService.findBeaconsByTime - enter update beacons');
 
-    let positions = repository.objects('Position').sorted('createdDate', true).slice(0,number);
-    console.log('BeaconService.findBeaconsByTime - objects filtered from repo ' + positions.length);
-    // publish a topic asynchronously
-    PubSub.publish('NEW_BEACONS_ADD', positions);
+    RealmRepository.dbOperation((repository) => {
+      let positions = repository.objects('Position').sorted('createdDate', true).slice(0,number);
+      console.log('BeaconService.findBeaconsByTime - objects filtered from repo ' + positions.length);
+      // publish a topic asynchronously
+      PubSub.publish('NEW_BEACONS_ADD', positions);
+    });
   }
 }
