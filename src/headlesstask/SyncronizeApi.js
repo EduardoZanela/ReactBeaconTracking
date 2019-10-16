@@ -1,3 +1,5 @@
+import moment from 'moment';
+import timezone from 'moment-timezone'
 import InterSCity from './../api/InterSCityApi';
 import RealmRepository from './../models/RealmRepository';
 
@@ -15,10 +17,10 @@ const createRequest = (positions) => {
         'id': position.id,
         'lat': position.lat,
         'lng': position.lng,
-        'createdDate': position.createdDate,
+        'createdDate': moment(position.createdDate).tz("America/Sao_Paulo").format(),
         'distances': Array.from(position.distances)
       },
-      'timestamp': position.createdDate
+      'timestamp': moment(position.createdDate).tz("America/Sao_Paulo").format()
     };
     request.data.location_monitoring.push(insert);
   });
@@ -34,12 +36,15 @@ const syncApi = async () => {
       var request = createRequest(positions);
       // Send to api
       // 'd2f1afff-2f61-4aae-9d9a-290adad2ac8a'
+      console.log('request ' + JSON.stringify(request));
       let uuid = repository.objects('User')[0].uuid;
       api.createData(uuid, request).then(response => {
         if(positions >= 1){
-          repository.delete(positions);
+          repository.write(() => {
+            repository.delete(positions);
+          });
         }
-        console.log('Scheduler.syncApi - data sent');
+        console.log('Scheduler.syncApi - data sent ' + JSON.stringify(response));
       }).catch(error => {
         console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
       });

@@ -24,4 +24,12 @@ export default class InterSCity {
         return this.instance.post('/adaptor/resources/'+uuid+'/data', data);
     }
 
+    filterData(uuid, filter){
+        return this.instance.post('/collector/resources/'+uuid+'/data', filter);
+    }
+
+    filterData(filter){
+        return this.instance.post('/collector/resources/data', filter);
+    }
+
 }

@@ -13,7 +13,10 @@ import RegisterForm from './RegisterForm';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default class Register extends Component {
-  
+  constructor(props){
+    super(props);
+  }
+
   render() {
     return (
       <TouchableWithoutFeedback onPress={() => {Keyboard.dismiss()}}>
@@ -25,13 +28,12 @@ export default class Register extends Component {
               contentContainerStyle={styles.container}
               scrollEnabled={false}
             > 
-          <StatusBar translucent backgroundColor='transparent' barStyle='dark-content'/>
           <View style={styles.logoContainer}>
             <Image style={styles.logo} source={require('./../images/logoRegister.png')} />
             <Text style={styles.title}>Beacon Tracking Cadastro</Text>
           </View>
           <View style={styles.formContainer}>
-            <RegisterForm />
+            <RegisterForm navigation={this.props.navigation}/>
           </View>
         </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>

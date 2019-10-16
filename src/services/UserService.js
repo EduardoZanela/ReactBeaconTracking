@@ -9,7 +9,7 @@ export default class UserService{
   
   constructor(){}
   
-  saveUser(user){
+  saveUser(user, callbackRedirect){
     let resource = {
         'data': {
             'description': user.name + ' ' + user.email,
@@ -30,9 +30,10 @@ export default class UserService{
                     repository.create('User', userEntity);
                 });
             });
+            callbackRedirect();
         })
         .catch(error => {
-            console.log('UserService.saveUser - Not possible to save user, try again' + JSON.stringify(error.response));
+            console.log('UserService.saveUser - Not possible to save user, try again ' + JSON.stringify(error));
         });
   }
 }

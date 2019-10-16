@@ -5,14 +5,23 @@ import { View,
     Text,
     TouchableOpacity,
     StatusBar } from 'react-native';
+import { StackActions, NavigationActions } from 'react-navigation';
 
 import UserService from './../services/UserService';
+
+const resetAction = StackActions.reset({
+    index: 0, // <-- currect active route from actions array
+    actions: [
+      NavigationActions.navigate({ routeName: 'Home' }),
+    ],
+});
+
 
 const userService = new UserService();
 
 export default class RegisterForm extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = {
             validName: true,
             validEnrollment: true,
@@ -60,9 +69,14 @@ export default class RegisterForm extends Component {
             email: this.state.emailText
         }
         if(this.allFieldsValid){
-            userService.saveUser(register);
+            userService.saveUser(register, this.callbackRedirect.bind(this));
             console.log('value: ', register);
         }
+    }
+
+    callbackRedirect(){
+        console.log('redirect');
+        this.props.navigation.dispatch(resetAction);
     }
 
     render() {

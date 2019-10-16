@@ -12,6 +12,7 @@ import com.beacontracking.constants.Event;
 import com.beacontracking.service.LocationService;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -37,7 +38,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BeaconModule extends ReactContextBaseJavaModule implements BeaconConsumer, RangeNotifier {
+public class BeaconModule extends ReactContextBaseJavaModule implements BeaconConsumer, RangeNotifier, LifecycleEventListener {
 
     private static final String MODULE_NAME = "BeaconModule";
     private static final String LOG_TAG = "BeaconModule";
@@ -53,30 +54,34 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
         super(reactContext);
         Log.d(LOG_TAG, "started");
         this.mReactContext = reactContext;
+        this.mReactContext.addLifecycleEventListener(this);
     }
 
     @Override
     public void initialize() {
         super.initialize();
-
         // USING ALTBEACON SDK
         this.mApplicationContext = this.mReactContext.getApplicationContext();
         this.mBeaconManager = BeaconManager.getInstanceForApplication(this.mApplicationContext);
+        Log.d(LOG_TAG, "inside initialize outside bound");
+        if (!mBeaconManager.isBound(this)) {
+            Log.d(LOG_TAG, "inside initialize not bound");
+            // Detect the main identifier (UID) frame:
+            mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(IBEACON));
+            mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(ESTIMOTE_DEFAULT));
+            mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
 
-        // Detect the main identifier (UID) frame:
-        mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(IBEACON));
-        mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(ESTIMOTE_DEFAULT));
-        mBeaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+            // Period between scans it will wait 5 seconds to scan again
+            mBeaconManager.setForegroundBetweenScanPeriod((60000*2));
+            // Period between background scans it will wait 1 minute to scan again
+            mBeaconManager.setBackgroundBetweenScanPeriod((60000*5));
 
-        // Period between scans it will wait 5 seconds to scan again
-        mBeaconManager.setForegroundBetweenScanPeriod(60000);
-        // Period between background scans it will wait 1 minute to scan again
-        mBeaconManager.setBackgroundBetweenScanPeriod(60000);
+            // Simply constructing this class and holding a reference to it in your custom Application class
+            // enables auto battery saving of about 60%
+            backgroundPowerSaver = new BackgroundPowerSaver(this.mApplicationContext);
 
-        // Simply constructing this class and holding a reference to it in your custom Application class
-        // enables auto battery saving of about 60%
-        backgroundPowerSaver = new BackgroundPowerSaver(this.mApplicationContext);
-        bindManager();
+            bindManager();
+        }
     }
 
     public void bindManager() {
@@ -95,6 +100,7 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     @Override
     public void onBeaconServiceConnect() {
         // Add ranging notifier
+        mBeaconManager.removeAllRangeNotifiers();
         mBeaconManager.addRangeNotifier(this);
         sendEvent(mReactContext, Event.EVENT_BEACON_SERVICE_CONNECTED, null);
     }
@@ -157,7 +163,6 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     @ReactMethod
     public void startRanging(Callback resolve, Callback reject) {
         Log.d(LOG_TAG, "startRanging for any region");
-
         Region region = new Region("beacon_tracking_region", null, null, null);
         try {
             mBeaconManager.startRangingBeaconsInRegion(region);
@@ -178,6 +183,7 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     public void setBackgroundBetweenScanPeriod(int period) throws RemoteException {
         mBeaconManager.setBackgroundBetweenScanPeriod((long) period);
         mBeaconManager.updateScanPeriods();
+        Log.d(LOG_TAG, "Time background received: " + period + " Time seted " + mBeaconManager.getForegroundBetweenScanPeriod());
     }
 
     @ReactMethod
@@ -190,6 +196,28 @@ public class BeaconModule extends ReactContextBaseJavaModule implements BeaconCo
     public void setForegroundBetweenScanPeriod(int period) throws RemoteException {
         mBeaconManager.setForegroundBetweenScanPeriod((long) period);
         mBeaconManager.updateScanPeriods();
-        Log.d(LOG_TAG, "Time received: " + period + " Time seted " + mBeaconManager.getForegroundBetweenScanPeriod());
+        Log.d(LOG_TAG, "Time foreground received: " + period + " Time seted " + mBeaconManager.getForegroundBetweenScanPeriod());
+    }
+
+    @Override
+    public void onHostResume() {
+        Log.d(LOG_TAG, "resumed");
+    }
+
+    @Override
+    public void onHostPause() {
+        Log.d(LOG_TAG, "paused");
+    }
+
+    @Override
+    public void onHostDestroy() {
+        Log.d(LOG_TAG, "destroied");
+        mBeaconManager.unbind(this);
+    }
+
+    @Override
+    public void onCatalystInstanceDestroy() {
+        Log.d(LOG_TAG, "catalyst");
+        mBeaconManager.unbind(this);
     }
 }

@@ -7,7 +7,11 @@ import {AppState} from 'react-native';
 import Position from './../models/Position';
 import Distance from './../models/Distance';
 import Resources from './../constants/Constants';
+import InterSCityApi from './../api/InterSCityApi';
+import Beacon from './../models/Beacon';
+import Build from './../models/Build'
 
+const api = new InterSCityApi();
 
 export default class BeaconService{
   
@@ -42,11 +46,44 @@ export default class BeaconService{
     // SAVE POSITION WITH DISTANCES
     let position = new Position(distances);
     RealmRepository.dbOperation((repository) => {
-      repository.write(() => {
-        repository.create('Position', position);
+      
+      let minDistanceBeacon = position.distances.reduce((prev, current) => { 
+        return (prev.distance < current.distance) ? prev : current 
       });
+      let uuids = position.distances.map(distance => distance.uuid);
+      let query = uuids.map((uuid) => "uuid == '" + uuid + "'").join(' OR ');
+      let beacons = repository.objects('Beacon');
+      let filteredBeacons = beacons.filtered(query);
+
+      if(filteredBeacons.length != uuids.length){
+        let mapDbUuid = filteredBeacons.map(b => b.uuid);
+        let difference = uuids.filter(x => !mapDbUuid.includes(x));
+        let filterApi = {
+          'capabilities': ['beacon_info'],
+	        'matchers': {
+            'beacon_uuid.in': difference
+          }
+        }
+        api.filterData(filterApi).then(response => {
+          response.data.resources.forEach((resource) => {
+            resource.capabilities.beacon_info.forEach((beacon) =>{
+              repository.write(() => {
+                repository.create('Beacon', new Beacon(beacon, new Build(beacon)));
+              });
+            });
+          });
+          let beaconsRepo = repository.objects('Beacon');
+          console.log('BeaconService.saveData - beacon repo ' + JSON.stringify(beaconsRepo));
+          repository.write(() => {
+            repository.create('Position', position);
+          });
+        });
+      } else {
+        repository.write(() => {
+          repository.create('Position', position);
+        });
+      }
     });
-    
     if(this.state.appState.match(/active/)){
       // CALL FUNCTION TO UPDATE STATE AND SHOW LAST POSITIONS
       this.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
@@ -66,5 +103,36 @@ export default class BeaconService{
       // publish a topic asynchronously
       PubSub.publish('NEW_BEACONS_ADD', positions);
     });
+  }
+
+  async generateReport(from, until, beacon){
+
+    return;
+    
+    
+    console.log("date " + from + " " + until);
+    let fromWithTimezone = moment(from).tz("America/Sao_Paulo");
+    let untilWithTimezone = moment(until).tz("America/Sao_Paulo");
+    let request = {
+      'capabilities': ['location_monitoring'],
+      'matchers':{
+        'position.distances.uuid.eq': beacon
+      },
+      'start_date': fromWithTimezone.format(),
+      'end_date': untilWithTimezone.format()
+    };
+    console.log(JSON.stringify(request));
+    RealmRepository.dbOperation(repository => {
+      let user = repository.objects('User')[0];
+      console.log('here inside db');
+      api.filterData(user.uuid, request).then(response => {
+        // DO SOMETHING
+        // RETURN PROMISSE
+        console.log('BeaconService.generateReport response - ' + JSON.stringify(response.data));
+      }).catch(error => {
+        console.log('BeaconService.generateReport - error to filter data ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
+      });
+    });
+
   }
 }
