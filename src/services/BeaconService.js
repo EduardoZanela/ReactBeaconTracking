@@ -3,6 +3,8 @@ import timezone from 'moment-timezone'
 import PubSub from 'pubsub-js'
 import RealmRepository from './../models/RealmRepository';
 import {AppState} from 'react-native';
+import PDFLib, { PDFDocument, PDFPage } from 'react-native-pdf-lib';
+import RNFS from 'react-native-fs';
 
 import Position from './../models/Position';
 import Distance from './../models/Distance';
@@ -107,9 +109,6 @@ export default class BeaconService{
 
   async generateReport(from, until, beacon){
 
-    return;
-    
-    
     console.log("date " + from + " " + until);
     let fromWithTimezone = moment(from).tz("America/Sao_Paulo");
     let untilWithTimezone = moment(until).tz("America/Sao_Paulo");
@@ -121,18 +120,32 @@ export default class BeaconService{
       'start_date': fromWithTimezone.format(),
       'end_date': untilWithTimezone.format()
     };
-    console.log(JSON.stringify(request));
     RealmRepository.dbOperation(repository => {
       let user = repository.objects('User')[0];
       console.log('here inside db');
       api.filterData(user.uuid, request).then(response => {
-        // DO SOMETHING
-        // RETURN PROMISSE
+        this.generatePDF(response.data, user);
         console.log('BeaconService.generateReport response - ' + JSON.stringify(response.data));
       }).catch(error => {
         console.log('BeaconService.generateReport - error to filter data ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
       });
     });
+  }
 
+  generatePDF(data, user){
+    const page2 = PDFPage
+    .create()
+    .setMediaBox(250, 250)
+    .drawText('You can add JPG images too!');
+
+    const pdfPath = RNFS.ExternalStorageDirectoryPath+'/Documents/sample.pdf'
+    PDFDocument
+      .create(pdfPath)
+      .addPages(page2)
+      .write() // Returns a promise that resolves with the PDF's path
+      .then(path => {
+        console.log('PDF created at: ' + path);
+        // Do stuff with your shiny new PDF!
+      });
   }
 }

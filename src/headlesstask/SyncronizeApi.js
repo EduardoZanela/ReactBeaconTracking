@@ -44,7 +44,7 @@ const syncApi = async () => {
             repository.delete(positions);
           });
         }
-        console.log('Scheduler.syncApi - data sent ' + JSON.stringify(response));
+        console.log('Scheduler.syncApi - data sent');
       }).catch(error => {
         console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
       });
