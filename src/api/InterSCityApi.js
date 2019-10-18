@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-const URL = 'http://192.168.0.152:8000';
+const URL = 'http://192.168.0.107:8000';
 
 export default class InterSCity {
     
     constructor(){
         this.instance = axios.create({
             baseURL: URL,
-            timeout: 1000,
+            timeout: 5000,
             headers: {}
         });
     }
@@ -28,7 +28,7 @@ export default class InterSCity {
         return this.instance.post('/collector/resources/'+uuid+'/data', filter);
     }
 
-    filterData(filter){
+    filterAllData(filter){
         return this.instance.post('/collector/resources/data', filter);
     }
 

@@ -17,10 +17,10 @@ const createRequest = (positions) => {
         'id': position.id,
         'lat': position.lat,
         'lng': position.lng,
-        'createdDate': moment(position.createdDate).tz("America/Sao_Paulo").format(),
+        'createdDate': position.createData,
         'distances': Array.from(position.distances)
       },
-      'timestamp': moment(position.createdDate).tz("America/Sao_Paulo").format()
+      'timestamp': moment(position.createdDate).tz("America/Sao_Paulo").toDate()
     };
     request.data.location_monitoring.push(insert);
   });
@@ -34,9 +34,6 @@ const syncApi = async () => {
     let positions = Array.from(repository.objects('Position').slice(0,10));
     if(positions.length > 0){
       var request = createRequest(positions);
-      // Send to api
-      // 'd2f1afff-2f61-4aae-9d9a-290adad2ac8a'
-      console.log('request ' + JSON.stringify(request));
       let uuid = repository.objects('User')[0].uuid;
       api.createData(uuid, request).then(response => {
         if(positions >= 1){

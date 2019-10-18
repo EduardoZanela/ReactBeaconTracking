@@ -1,17 +1,8 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-
 import React from 'react';
 import {
   View,
   Text,
   Picker,
-  Button,
   StyleSheet,
   TouchableOpacity,
   Image
@@ -37,7 +28,7 @@ export default class HomeScreen extends React.Component{
     this.state = {
       user: {'uuid': ''},
       beacons: [],
-      PickerValueHolder: '',
+      pickerValueHolder: '',
       isTimePickerFromVisible: false,
       isTimePickerUntilVisible: false,
       timeFrom: '',
@@ -124,7 +115,7 @@ export default class HomeScreen extends React.Component{
         // SHOW ERROR
         console.log('error pick a date');
     } else {
-        beaconService.generateReport(this.state.timeFromDateFormat, this.state.timeUntilDateFormat, this.state.PickerValueHolder);
+        beaconService.generateReport(this.state.timeFromDateFormat, this.state.timeUntilDateFormat, this.state.pickerValueHolder);
     }
   }
 
@@ -157,9 +148,9 @@ export default class HomeScreen extends React.Component{
           <View style={styles.shaddowContainer}>
             <Picker
               mode="dropdown"
-              selectedValue={this.state.PickerValueHolder}
+              selectedValue={this.state.pickerValueHolder}
               style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => this.setState({PickerValueHolder: itemValue})} >
+              onValueChange={(itemValue, itemIndex) => this.setState({pickerValueHolder: itemValue})} >
               {
                 this.state.beacons.map((item, index) => {
                   return (<Picker.Item label={item.name} value={item.uuid} key={index}/>) 

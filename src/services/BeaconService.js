@@ -3,7 +3,7 @@ import timezone from 'moment-timezone'
 import PubSub from 'pubsub-js'
 import RealmRepository from './../models/RealmRepository';
 import {AppState} from 'react-native';
-import PDFLib, { PDFDocument, PDFPage } from 'react-native-pdf-lib';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import RNFS from 'react-native-fs';
 
 import Position from './../models/Position';
@@ -15,20 +15,33 @@ import Build from './../models/Build'
 
 const api = new InterSCityApi();
 
+/**
+ * Class that concentrates the beacon operations
+ */
 export default class BeaconService{
   
+  /**
+   * Constructor of Beacon Service
+   * @constructor
+   */
   constructor(){
     this.state = {
       appState: AppState.currentState
     }
     AppState.addEventListener('change', this._handleAppStateChange);
   }
+
+  /**
+   *  Function to update the state prop wiht application's state
+   *  @param {string} nextAppState The next state
+   */
   _handleAppStateChange = (nextAppState) => {
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
       console.log('App has come to the foreground!')
     }
     this.state.appState = nextAppState;
   }
+
   /**
    * Async function to save scanned beacons to realm database
    * @param {Object} data Beacons returned by native module 
@@ -66,7 +79,7 @@ export default class BeaconService{
             'beacon_uuid.in': difference
           }
         }
-        api.filterData(filterApi).then(response => {
+        api.filterAllData(filterApi).then(response => {
           response.data.resources.forEach((resource) => {
             resource.capabilities.beacon_info.forEach((beacon) =>{
               repository.write(() => {
@@ -107,9 +120,13 @@ export default class BeaconService{
     });
   }
 
+  /**
+   * Async function that call the api to generate the report
+   * @param {Date} from Start time to search for positions
+   * @param {Date} until Finish time to search for positions
+   * @param {Object} beacon the beacon uuid to search for
+   */
   async generateReport(from, until, beacon){
-
-    console.log("date " + from + " " + until);
     let fromWithTimezone = moment(from).tz("America/Sao_Paulo");
     let untilWithTimezone = moment(until).tz("America/Sao_Paulo");
     let request = {
@@ -117,35 +134,61 @@ export default class BeaconService{
       'matchers':{
         'position.distances.uuid.eq': beacon
       },
-      'start_date': fromWithTimezone.format(),
-      'end_date': untilWithTimezone.format()
+      'start_date': fromWithTimezone.toDate(),
+      'end_date': untilWithTimezone.toDate()
     };
+    console.log('BeaconService.generateReport request ' + JSON.stringify(request));
     RealmRepository.dbOperation(repository => {
       let user = repository.objects('User')[0];
-      console.log('here inside db');
+      console.log('here inside db ' + user.uuid);
       api.filterData(user.uuid, request).then(response => {
-        this.generatePDF(response.data, user);
-        console.log('BeaconService.generateReport response - ' + JSON.stringify(response.data));
+        console.log('BeaconService.generateReport response - ' + JSON.stringify(response));
+        if(response.data.resources.length > 0){
+          this.generatePDF(response.data, user);
+        } else {
+          alert('Você não possui dados nesse dia e hora');
+        }
       }).catch(error => {
         console.log('BeaconService.generateReport - error to filter data ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
       });
     });
   }
 
-  generatePDF(data, user){
-    const page2 = PDFPage
-    .create()
-    .setMediaBox(250, 250)
-    .drawText('You can add JPG images too!');
-
-    const pdfPath = RNFS.ExternalStorageDirectoryPath+'/Documents/sample.pdf'
-    PDFDocument
-      .create(pdfPath)
-      .addPages(page2)
-      .write() // Returns a promise that resolves with the PDF's path
-      .then(path => {
-        console.log('PDF created at: ' + path);
-        // Do stuff with your shiny new PDF!
-      });
+  /**
+   * Function to generate the report file
+   * @param {Object} data The return of Interscity api
+   * @param {Object} user The current user
+   */
+  async generatePDF(data, user){
+    let dateTime = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
+    let li = data.resources[0].capabilities.location_monitoring.map(position => 
+      position.position.distances.map(distance => `<li>${distance.createdDate} Predio X a  ${distance.distance} metros de distancia do marcador<\/li>`).join("\n")
+    ).join("\n");
+    let options = {
+      html: `<div style='display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;'>
+          <h1>Relatorio de Presença</h1>
+          <div>
+              <p>
+                  Atesto que que ${user.name} este presente nos locais e datas listados abaixo
+              </p>
+              
+                  <ul style="line-height: 3;">
+                      ${li}
+                      <li>
+                          01/10/2019 15:34 Predio B5 a 0.9 metros de distancia do marcador
+                      </li>
+                  </ul>
+              
+          </div>
+      </div>`,
+      fileName: 'Relatorio_Presenca_'+dateTime,
+      directory: RNFS.ExternalStorageDirectoryPath+'/Documents'
+    }
+    let file = await RNHTMLtoPDF.convert(options);
+    alert('Arquivo criado em ' + file.filePath);
   }
 }

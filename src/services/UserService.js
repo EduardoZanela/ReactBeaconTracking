@@ -5,11 +5,17 @@ import User from './../models/User';
 
 const api = new InterSCity();
 
+/**
+ * Class to concentrate the user operations
+ */
 export default class UserService{
-  
-  constructor(){}
-  
-  saveUser(user, callbackRedirect){
+
+  /**
+   * Function to save the user
+   * @param {Object} user User to be saved
+   * @param {requestCallback} cb Callback request after save the user
+   */
+  saveUser(user, cb){
     let resource = {
         'data': {
             'description': user.name + ' ' + user.email,
@@ -30,7 +36,7 @@ export default class UserService{
                     repository.create('User', userEntity);
                 });
             });
-            callbackRedirect();
+            cb();
         })
         .catch(error => {
             console.log('UserService.saveUser - Not possible to save user, try again ' + JSON.stringify(error));

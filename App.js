@@ -124,6 +124,15 @@ export default class App extends Component {
           buttonPositive: 'Permitir',
         },
       );
+      const grantedWriteExternal = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Permissão para gravar arquivos',
+          message: 'O aplicativo necessita gravar relatorios externamente',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'Permitir',
+        },
+      );
     } catch (err) {
       console.warn(err);
     }
