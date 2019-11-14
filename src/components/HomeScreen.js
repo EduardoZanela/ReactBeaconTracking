@@ -39,10 +39,11 @@ export default class HomeScreen extends React.Component{
       timeUntilError: false
     };
     this.findUser();
-  }
-
-  componentDidMount(){
     this.findBeacons();
+    PubSub.subscribe('UPDATE_BEACONS_REPO', (msg, data) => {
+      console.log('HomeScreen.constructor - on listner subscribe new beacons where add');
+      this.findBeacons();
+  });
   }
 
   findUser(){

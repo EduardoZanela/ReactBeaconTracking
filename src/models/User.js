@@ -6,7 +6,6 @@ export default class User {
 
     constructor(user, uuid){
         this.id = Utils.guid();
-        this.enrollment = user.enrollment;
         this.name = user.name;
         this.phoneNumber = user.phone;
         this.email = user.email;
@@ -19,7 +18,6 @@ export default class User {
         primaryKey: 'id',
         properties: {
             id: 'string',
-            enrollment: 'string',
             name: 'string',
             phoneNumber: 'string',
             email: 'string',

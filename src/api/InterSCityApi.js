@@ -1,9 +1,9 @@
 import axios from 'axios';
-
-const URL = 'http://192.168.0.107:8000';
+//192.168.0.107
+const URL = 'http://172.17.8.109:8000';
 
 export default class InterSCity {
-    
+
     constructor(){
         this.instance = axios.create({
             baseURL: URL,
@@ -25,7 +25,7 @@ export default class InterSCity {
     }
 
     filterData(uuid, filter){
-        return this.instance.post('/collector/resources/'+uuid+'/data', filter);
+    return this.instance.post('/collector/resources/' + uuid + '/data', filter);
     }
 
     filterAllData(filter){

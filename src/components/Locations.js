@@ -29,15 +29,21 @@ export default class Location extends React.Component{
         positions: []
     };
 
-    // CALL FUNCTION TO POPULATE STATE AND SHOW LAST BEACONS
-    beaconService.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
-
     PubSub.subscribe('NEW_BEACONS_ADD', (msg, data) => {
         console.log('APP.constructor - on listner subscribe + ' + data);
         this.setState({
           positions: data
         });
     });
+  }
+
+  componentDidMount(){
+    this.loadData();
+    //setInterval(this.loadData(), Resources.ONE_MINUTE_IN_MILLI_SECONDS*2);
+  }
+
+  loadData(){
+    beaconService.findBeaconsByTime(Resources.BEACONS_TO_SHOW);
   }
 
   navigateLocation(){
@@ -62,11 +68,13 @@ export default class Location extends React.Component{
     return (
       <React.Fragment>
         <View style={styles.container}>
+          <View style={styles.titleContainer}>
             <FlatList
-            data={this.state.positions}
-            renderItem={({item}) => <Text style={styles.item}>{item.id}</Text>}
-            />
-             <View style={{flexDirection:'row', paddingVertical: 20}}>
+              data={this.state.positions}
+              renderItem={({item}) => <Text style={styles.item}>{item.id}</Text>}
+              />
+          </View>
+          <View style={{flexDirection:'row', paddingVertical: 20}}>
             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-around'}}>
               <TouchableOpacity onPress={this.deleteUser.bind(this)}>
                 <Image style={{width: 25, height: 25}} source={require('./../images/icons8-map-24.png')}/>
@@ -91,5 +99,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 20
+  },
+  // Title
+  titleContainer:{
+    marginBottom: 35,
+    marginTop: 50
   },
 });

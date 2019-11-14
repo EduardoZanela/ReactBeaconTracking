@@ -31,17 +31,19 @@ const syncApi = async () => {
   console.log('Scheduler.syncApi - enter method');
 
   RealmRepository.dbOperation((repository) => {
-    let positions = Array.from(repository.objects('Position').slice(0,10));
-    if(positions.length > 0){
+    let positions = Array.from(repository.objects('Position').slice(0, 30));
+    let user = repository.objects('User')[0];
+    if(positions.length > 0 && user !== 'undefined'){
       var request = createRequest(positions);
-      let uuid = repository.objects('User')[0].uuid;
+      let uuid = user.uuid;
+      console.log('request length ' + request.data.location_monitoring.length + ' ' + uuid);
       api.createData(uuid, request).then(response => {
-        if(positions >= 1){
+        if(positions.length >= 1){
           repository.write(() => {
             repository.delete(positions);
           });
         }
-        console.log('Scheduler.syncApi - data sent');
+        console.log('Scheduler.syncApi - data sent, left registers ' + repository.objects('Position').length);
       }).catch(error => {
         console.warn('Scheduler.syncApi - error to contact api ' + JSON.stringify(error.response) + ' ' + JSON.stringify(error));
       });

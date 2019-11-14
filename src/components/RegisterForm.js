@@ -24,18 +24,16 @@ export default class RegisterForm extends Component {
         super(props);
         this.state = {
             validName: true,
-            validEnrollment: true,
             validPhone: true,
             validEmail: true,
             validSubmmit: true,
             nameText: '',
-            enrollmentText: '',
             phoneText: '',
             emailText: ''
         }
     }
     allFieldsValid(){
-        return this.state.validName && this.state.validEnrollment && this.state.validPhone && this.state.validEmail;
+        return this.state.validName && this.state.validPhone && this.state.validEmail;
     }
     
     validateNull(text){
@@ -64,7 +62,6 @@ export default class RegisterForm extends Component {
     submmitForm(){
         let register = {
             name: this.state.nameText,
-            enrollment: this.state.enrollmentText,
             phone:  this.state.phoneText,
             email: this.state.emailText
         }
@@ -91,29 +88,12 @@ export default class RegisterForm extends Component {
                         });
                         this.validateSubmmitButton();
                     }}
-                    onSubmitEditing={() => this.enrollmentInput.focus()}
+                    onSubmitEditing={() => this.emailInput.focus()}
                     returnKeyType='next' 
                     style={[styles.input, !this.state.validName ? styles.errorInput : styles.validInput]}
                     placeholder='Nome' />
                 {
                     !this.state.validName && <Text style={styles.errorText}>O campo nome não pode ser vazio</Text>
-                }
-                <TextInput
-                    onEndEditing={(e) => {
-                        this.setState({
-                            validEnrollment: this.validateNull(e.nativeEvent.text),
-                            enrollmentText: e.nativeEvent.text
-                        });
-                        this.validateSubmmitButton();
-                    }}
-                    ref={(input) => this.enrollmentInput = input}
-                    onSubmitEditing={() => this.phoneInput.focus()}
-                    keyboardType='numeric'
-                    returnKeyType='next'
-                    style={[styles.input, !this.state.validEnrollment? styles.errorInput : styles.validInput]}
-                    placeholder='Matricula'/>
-                {
-                    !this.state.validEnrollment && <Text style={styles.errorText}>O campo matricula não pode ser vazio</Text>
                 }
                 <TextInput
                     onEndEditing={(e) => {

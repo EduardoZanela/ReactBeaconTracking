@@ -17,8 +17,8 @@ export default class Position {
         primaryKey: 'id',
         properties: {
             id: 'string',
-            lat: 'string',
-            lng: 'string',
+            lat: {type: 'double', default: 0},
+            lng: {type: 'double', default: 0},
             createdDate: 'date',
             distances: 'Distance[]'
         }
