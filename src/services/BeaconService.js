@@ -200,7 +200,7 @@ export default class BeaconService {
         let filteredBeacons = beacons.filtered("uuid == '" + beacon + "'")
 
           if (response.data.resources.length > 0) {
-            this.generatePDF(response.data, user, dif, filteredBeacons[0]);
+            this.generatePDF(response.data, user, dif, filteredBeacons[0], from, until);
           } else {
             alert(Resources.REPORT_POSITIONS_NOT_FINDED);
           }
@@ -221,21 +221,18 @@ export default class BeaconService {
    * @param {Object} data The return of Interscity api
    * @param {Object} user The current user
    */
-  async generatePDF(data, user, dif, beacon) {
+  async generatePDF(data, user, dif, beacon, dateFrom, dateUntil) {
     let dateTime = moment(new Date()).format('YYYY-MM-DD-HH:mm:ss');
     if(data.resources[0].capabilities.location_monitoring.length >= dif){
       console.log("Atingiu frequencia");
     }
-    let li = data.resources[0].capabilities.location_monitoring
-      .map(position =>
-        position.position.distances
-          .map(
-            distance =>
-              `<li>${moment(distance.createdDate).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm')} - à ${Math.round(distance.distance)} metros de distancia do marcador<\/li>`,
-          )
-          .join('\n'),
-      )
-      .join('\n');
+    
+    let allDistances = []
+    data.resources[0].capabilities.location_monitoring.forEach(position => position.position.distances.forEach(distance => allDistances.push(distance.distance)))
+    let maxDistance = Math.max(...allDistances).toFixed(2);
+    let minDistance = Math.min(...allDistances).toFixed(2);
+    let sum = allDistances.reduce((previous, current) => current += previous);
+    let avg = (sum / allDistances.length).toFixed(2);
     let options = {
       html: `
       <div style='display: flex;
@@ -245,14 +242,12 @@ export default class BeaconService {
                   text-align: center;'>
         <h1>Relatorio de Presença</h1>
         <div>
-          <p>
-            Atesto que que ${
-              user.name
-            } esteve ao alcance do marcador ${beacon.name} localizado em ${beacon.build.name} nas datas e distancias listadas abaixo
+          <p style='
+              text-align: justify;
+              margin: 30px;'>
+            Atesto para os devidos fins que ${user.name} esteve ao alcance do marcador ${beacon.name} localizado no prédio ${beacon.build.name} no período de ${moment(dateFrom).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm')} a ${moment(dateUntil).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm')}. 
+            Durante este período a distancia entre ${user.name} e o marcador ficou entre ${minDistance} E ${maxDistance} com uma media de ${avg} METROS.
           </p>
-          <ul style="line-height: 3;">
-            ${li}
-          </ul>
         </div>
       </div>`,
       fileName: 'Relatorio_Presenca_' + dateTime,

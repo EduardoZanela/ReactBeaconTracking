@@ -1,6 +1,8 @@
 import axios from 'axios';
-//192.168.0.107
-const URL = 'http://172.17.8.109:8000';
+//192.168.0.107:8000
+//172.17.8.109:8000 -> upf local interscity
+//177.67.253.26:8000 -> upf outside
+const URL = 'http://177.67.253.26:8000';
 
 export default class InterSCity {
 
