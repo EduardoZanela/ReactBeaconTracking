@@ -13,7 +13,7 @@
     "moment-timezone": "^0.5.26",
     "pubsub-js": "^1.7.0",
     "react": "16.8.6",
-    "react-native": "0.60.5",
+    "react-native": "0.62.3",
     "react-native-background-fetch": "^2.7.0",
     "react-native-fs": "^2.14.1",
     "react-native-gesture-handler": "^1.4.1",
